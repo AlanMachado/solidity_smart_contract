@@ -1,0 +1,4 @@
+.DS_Store
+.idea
+smart_contracts/build/
+smart_contracts/node_modules/
