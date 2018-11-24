@@ -14,6 +14,11 @@
             <h1>Star Notary</h1>
 
             <div class="row">
+                <label class="bold">Token Id:</label>
+                <input type="number" id="token-id" />
+            </div>
+
+            <div class="row">
                 <label class="bold">Star Name:</label>
                 <input type="text" id="star-name-input" />
             </div>
@@ -39,8 +44,8 @@
             </div>
 
             <div class="row">
-                <label class="bold">Star Name:</label>
-                <label id="star-name"></label>
+                <label class="bold">Star Price:</label>
+                <input type="number" id="star-price" />
             </div>
 
             <div class="row">
@@ -48,7 +53,14 @@
                 <label id="star-owner"></label>
             </div>
 
+            <div class="row">
+                <label class="bold">Star Transaction:</label>
+                <a id="star-tx" href="#" target="_blank"></a>
+            </div>
+
             <button id="claim-button" onclick="claimButtonClicked()">Claim Star</button>
+            <button id="sell-button" onclick="sellButtonClicked()">Sell Star</button>
+            <button id="showInfo" onclick="showInfo()">Show info</button>
         </div>
 
         <script>    
@@ -571,31 +583,114 @@
                         return
                     }
                     var account = accounts[0];
+                    var tokenId = document.getElementById('token-id').value;
                     var name = document.getElementById('star-name-input').value;
                     var story = document.getElementById('star-story').value;
                     var dec = document.getElementById('star-dec').value;
                     var mag = document.getElementById('star-mag').value;
                     var ra = document.getElementById('star-ra').value;
-                    if(dec !== undefined && dec.trim() !== '' && mag !== undefined && mag.trim() !== '' && ra !== undefined && ra.trim() !== ''){
-                        starNotary.createStar(name, ra.trim(), dec.trim(), mag.trim(), story, 1, {from: account}, function (error, result) {
-                            if (!error) {
-                                console.log(result);
-                                /*var starClaimedEvent = starNotary.starClaimed({from: account});
-                                starClaimedEvent.watch(function(error, result) {
-                                    if (!error) {
-                                        location.reload();
-                                        console.log(result);
-                                    } else {
-                                        console.log('watching for star claimed event is failing');
-                                    }
-                                });*/
-                            } else {
+
+                    if(tokenId !== undefined && !isNaN(parseInt(tokenId)) &&
+                        dec !== undefined && dec.trim() !== '' && mag !== undefined && mag.trim() !== '' && ra !== undefined && ra.trim() !== ''){
+
+                        starNotary.ownerOf(parseInt(tokenId), function (error, result) {
+                            if(!error) {
+                                if(result === '0x') {
+                                    starNotary.createStar(name, ra.trim(), dec.trim(), mag.trim(), story, parseInt(tokenId), {from: account}, function (error, result) {
+                                        if (!error) {
+                                            let txLink = document.getElementById('star-tx');
+                                            txLink.innerText = 'https://rinkeby.etherscan.io/tx/' + result;
+                                            txLink.setAttribute('href', 'https://rinkeby.etherscan.io/tx/' + result);
+                                            document.getElementById('star-owner').innerText = account;
+                                        } else {
+                                            console.log(error);
+                                        }
+                                    });
+                                }else {
+                                    alert('This token ' + tokenId + ' was already used.');
+                                }
+                            }else {
                                 console.log(error);
                             }
-                        });
+
+                        })
+
+                    } else {
+                        alert("Please, fill the star's information.")
                     }
                 })
             }
+
+            function sellButtonClicked() {
+
+                web3.eth.getAccounts(function(error, accounts) {
+                    if (error) {
+                        console.log(error)
+                        return
+                    }
+                    var account = accounts[0];
+                    var tokenId = document.getElementById('token-id').value;
+                    var starPrice = document.getElementById('star-price').value;
+
+                    if(tokenId !== undefined && !isNaN(parseInt(tokenId)) && starPrice !== undefined && !isNaN(parseInt(starPrice))) {
+                        starNotary.ownerOf(parseInt(tokenId), function (error, result) {
+                            if (!error) {
+                                if (result !== '0x') {
+                                    starNotary.putStarUpForSale(parseInt(tokenId), parseInt(starPrice), {from: account}, function (error, result) {
+                                        if(!error) {
+                                            alert('Star up for sale!');
+                                        }else {
+                                            console.log(error);
+                                        }
+                                    })
+                                } else {
+                                    alert('This token has no owner.');
+                                }
+                            }
+                        })
+
+
+                    }else {
+                        alert("Please, inform the token and the price.")
+                    }
+                })
+            }
+
+            function showInfo() {
+                web3.eth.getAccounts(function(error, accounts) {
+                    if (error) {
+                        console.log(error)
+                        return
+                    }
+
+                    var tokenId = document.getElementById('token-id').value;
+
+                    if(tokenId !== undefined && !isNaN(parseInt(tokenId))){
+                        starNotary.tokenIdToStarInfo(parseInt(tokenId), function (error, result) {
+                            if(!error) {
+                                document.getElementById('star-name-input').value = result[0];
+                                document.getElementById('star-ra').value = result[1];
+                                document.getElementById('star-dec').value = result[2];
+                                document.getElementById('star-mag').value = result[3];
+                                document.getElementById('star-story').value = result[4];
+
+                                starNotary.ownerOf(parseInt(tokenId), function (error, result) {
+                                    if(!error) {
+                                        document.getElementById('star-owner').innerText = result;
+                                    }else {
+                                        console.log(error);
+                                    }
+                                })
+
+                            }else {
+                                console.log(error);
+                            }
+
+                        })
+                    }
+                })
+            }
+
         </script>
     </body>
 </html>
