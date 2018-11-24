@@ -593,28 +593,16 @@
                     if(tokenId !== undefined && !isNaN(parseInt(tokenId)) &&
                         dec !== undefined && dec.trim() !== '' && mag !== undefined && mag.trim() !== '' && ra !== undefined && ra.trim() !== ''){
 
-                        starNotary.ownerOf(parseInt(tokenId), function (error, result) {
-                            if(!error) {
-                                if(result === '0x') {
-                                    starNotary.createStar(name, ra.trim(), dec.trim(), mag.trim(), story, parseInt(tokenId), {from: account}, function (error, result) {
-                                        if (!error) {
-                                            let txLink = document.getElementById('star-tx');
-                                            txLink.innerText = 'https://rinkeby.etherscan.io/tx/' + result;
-                                            txLink.setAttribute('href', 'https://rinkeby.etherscan.io/tx/' + result);
-                                            document.getElementById('star-owner').innerText = account;
-                                        } else {
-                                            console.log(error);
-                                        }
-                                    });
-                                }else {
-                                    alert('This token ' + tokenId + ' was already used.');
-                                }
-                            }else {
+                        starNotary.createStar(name, ra.trim(), dec.trim(), mag.trim(), story, parseInt(tokenId), {from: account}, function (error, result) {
+                            if (!error) {
+                                let txLink = document.getElementById('star-tx');
+                                txLink.innerText = 'https://rinkeby.etherscan.io/tx/' + result;
+                                txLink.setAttribute('href', 'https://rinkeby.etherscan.io/tx/' + result);
+                                document.getElementById('star-owner').innerText = account;
+                            } else {
                                 console.log(error);
                             }
-
                         })
-
                     } else {
                         alert("Please, fill the star's information.")
                     }
@@ -633,22 +621,15 @@
                     var starPrice = document.getElementById('star-price').value;
 
                     if(tokenId !== undefined && !isNaN(parseInt(tokenId)) && starPrice !== undefined && !isNaN(parseInt(starPrice))) {
-                        starNotary.ownerOf(parseInt(tokenId), function (error, result) {
-                            if (!error) {
-                                if (result !== '0x') {
-                                    starNotary.putStarUpForSale(parseInt(tokenId), parseInt(starPrice), {from: account}, function (error, result) {
-                                        if(!error) {
-                                            alert('Star up for sale!');
-                                        }else {
-                                            console.log(error);
-                                        }
-                                    })
-                                } else {
-                                    alert('This token has no owner.');
-                                }
+                        starNotary.putStarUpForSale(parseInt(tokenId), parseInt(starPrice), {from: account}, function (error, result) {
+                            if(!error) {
+                                let txLink = document.getElementById('star-tx');
+                                txLink.innerText = 'https://rinkeby.etherscan.io/tx/' + result;
+                                txLink.setAttribute('href', 'https://rinkeby.etherscan.io/tx/' + result);
+                            }else {
+                                console.log(error);
                             }
                         })
-
 
                     }else {
                         alert("Please, inform the token and the price.")
